@@ -1,0 +1,46 @@
+#div-dialog-template {
+    width: 400px;
+    background-color: white;
+    text-align: center;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: grey 0 0 10px;
+    pointer-events: all;
+}
+
+#div-dialog-view {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+#div-dialog-template h2 {
+    margin-top: 0;
+}
+
+#div-dialog-buttons {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-around;
+}
+
+.button-style {
+    width: 80px;
+    height: 35px;
+    border-width: 0;
+    border-radius: 8px;
+    color: white;
+}
+
+.button-style:hover {
+    background-color: darkseagreen !important;
+}
+
+#div-dialog-textarea {
+    width: 80%;
+    height: 80px;
+}

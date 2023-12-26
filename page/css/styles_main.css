@@ -1,0 +1,37 @@
+.bg-grey {
+    background: #f5f5f5 !important;
+}
+
+.bg-normal-user {
+    background: #000000;
+}
+
+.bg-l2-user {
+    background: deepskyblue;
+}
+
+.bg-l3-user {
+    background: goldenrod;
+}
+
+.bg-l4-user {
+    background: dodgerblue;
+}
+
+.bg-l5-user {
+    background: darkred;
+}
+
+.img-h-100p {
+    height: 100px !important;
+}
+
+.align-items-center-small {
+
+}
+
+@media screen and (max-width: 576px){
+    .align-items-center-small {
+        align-items: center;
+    }
+}

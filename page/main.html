@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>个人主页</title>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1"/>
+    <link rel="stylesheet" href="http://www.libreeze.top/res/css/bootstrap/bootstrap.css">
+    <link rel="stylesheet" href="css/css_dialog_copy.css">
+    <script src="http://www.libreeze.top/res/js/jquery.js"></script>
+    <script src="http://www.libreeze.top/res/js/vue.global.js"></script>
+    <link rel="stylesheet" href="css/styles_main.css">
+</head>
+<body class="bg-grey">
+
+<section class="bg-dark">
+    <div class="container d-flex align-items-center">
+        <div class="nav navbar">
+            <div class="navbar-brand text-light">
+                <h2>aCloud</h2>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!--主页面-->
+<section id="main_page" class="bg-white shadow-sm">
+    <div class="p-3 container d-flex flex-column pt-3 align-items-center">
+        <h1 class="display-5">欢迎回来!{{username}}</h1>
+        <p>🏟在这里您可以上传您的照片到本站，本站将会返回图片的直链方便用户进行使用。🏟</p>
+        <div class="d-flex flex-column flex-lg-row col-12 justify-content-center align-items-center-small">
+            <div class="col-12 col-lg-5 card border-3 m-2">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h2>用户信息</h2>
+                        <button class="btn bg-light" @click="logout">退出登录></button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p>🌸用户身份:<label id="userIdentity" class="badge">普通用户</label></p>
+                    <p>💐最大上传数量限制:{{allPic}}/{{totalPic}}</p>
+                    <p>🌺最大上传大小限制:{{maxSize}}M</p>
+                    <p>⏰最大储存时间限制:{{expireTime}}天</p>
+                </div>
+                <div class="card-footer">
+                    <button @click="improve" class="btn btn-primary">升级身份</button>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-5 card border-3 m-2">
+                <div class="card-header">
+                    <h2>上传图片</h2>
+                </div>
+                <form enctype="multipart/form-data" method="post" id="upload_form" action="../api/v1/upload.php">
+                    <div class="card-body">
+                        <p>请选择上传的图片</p>
+                        <input name="upload[]" type="file" accept="image/*" multiple>
+                        <button type="submit" class="btn btn-primary bottom-0">立即上传</button>
+                        <label hidden>
+                            <input name="token" v-model="token">
+                        </label>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="col-12 d-flex justify-content-center align-items-center position-absolute z-1">
+    <div id="div-dialog-template">
+        <h2>提示</h2>
+        <p>若页面无法复制请手动复制</p>
+        <textarea id="div-dialog-textarea" disabled></textarea>
+        <div id="div-dialog-buttons">
+            <button onclick="copyCMD()" disabled class="button-style" style="background-color: cornflowerblue">复制</button>
+            <button onclick="confirm()" class="button-style" style="background-color: hotpink">确定</button>
+        </div>
+    </div>
+</div>
+
+<section id="picture_sector">
+    <div class="container p-lg-5 p-0">
+        <div id="pic_container" class="d-flex flex-wrap justify-content-center align-items-center w-100">
+        </div>
+    </div>
+</section>
+
+
+<script>
+    $('#div-dialog-template').hide();
+
+    function copy(name) {
+        let link = "http://www.libreeze.top/web/aCloud/page/php/pic.php?data=" + name;
+        $('#div-dialog-template').show();
+        $('#div-dialog-textarea').text(link);
+    }
+
+    function confirm() {
+        $('#div-dialog-template').hide();
+    }
+
+    function copyCMD() {
+
+    }
+
+    function deletePic(path,token) {
+        $.ajax({
+            type:"GET",
+            url:"http://www.libreeze.top/web/aCloud/api/v1/dpicture.php?path="+path+"&token="+token,
+            success:function (result) {
+                let parse = JSON.parse(result);
+                alert(parse['msg'])
+                location.reload()
+            }
+        })
+    }
+</script>
+
+<script type="module">
+
+    function getPictureHTML() {
+        $.get("php/gpicturehtml.php?token=" + gtoken, (result, states) => {
+            if (states === 'success') {
+                console.log(result);
+                $("#pic_container").html(result);
+            }
+        });
+    }
+
+    let gtoken = "";
+
+    Vue.createApp({
+        data() {
+            return {
+                username: '',
+                token: '',
+                identity: 1,
+                allPic: 0,
+                expireTime: 3,
+                totalPic: 20,
+                maxSize: 1
+            }
+        },
+        mounted() {
+            let value = location.search;
+            if (value != null) {
+                let string = value.split("data=")[1];
+                this.token = string;
+                gtoken = string;
+
+                $.post("../api/v1/guploadedpics.php", {
+                    t: string
+                }, (result) => {
+                    this.allPic = result;
+                })
+
+                // token
+                /*let data1 = window.atob(string);
+                let parse = JSON.parse(data1);
+                this.username = parse['username'];*/
+                $.post("../api/v1/guser.php", {
+                    t: string
+                }, (result) => {
+                    let parse = JSON.parse(result);
+                    this.username = parse['username'];
+                    this.identity = parse['identity'];
+                    let user_idn = "普通用户";
+                    let user_cls = "bg-normal-user";
+                    switch (this.identity) {
+                        case '2':
+                            user_idn = "高级用户";
+                            user_cls = "bg-l2-user";
+                            this.totalPic = 40;
+                            this.maxSize = 5;
+                            this.expireTime = 7;
+                            break;
+                        case '3':
+                            user_idn = "至尊用户";
+                            user_cls = "bg-l3-user";
+                            this.totalPic = 100;
+                            this.maxSize = 10;
+                            this.expireTime = 30;
+                            break;
+                    }
+                    $('#userIdentity').empty().append(user_idn).addClass(user_cls);
+                })
+            }
+        },
+        methods: {
+            logout: function () {
+                $.post("../api/v1/gcookies.php", {
+                    token: '-1'
+                }, function (result) {
+                    if (result === "1") {
+                        location.href = "../index.html";
+                    }
+                });
+            },
+            improve:function () {
+                location.href="userIdentity.html?data="+this.token;
+            }
+        }
+    }).mount("#main_page");
+
+    import component_dialog_copy from "./js/component_dialog_copy.js";
+
+    Vue.createApp({
+        components: {
+            component_dialog_copy
+        },
+        data() {
+            return {}
+        },
+        mounted() {
+            getPictureHTML();
+        }
+    }).mount("#picture_sector");
+</script>
+
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>升级身份</title>
+    <link rel="stylesheet" href="http://www.libreeze.top/res/css/bootstrap/bootstrap.css">
+    <script src="http://www.libreeze.top/res/js/jquery.js"></script>
+    <script src="http://www.libreeze.top/res/js/vue.global.js"></script>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1"/>
+    <link rel="stylesheet" href="css/styles_user_identity.css">
+</head>
+<body>
+
+<section class="bg-dark">
+    <div class="container d-flex align-items-center">
+        <div class="nav navbar">
+            <div class="navbar-brand text-light">
+                <h2>aCloud</h2>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="main_body">
+    <div class="container pt-5">
+        <div>
+            <h1 class="display-5 text-center">您好!{{username}}</h1>
+            <div class="col-12 d-flex flex-column justify-content-center align-items-center">
+                <div>
+                    <p>🙂以下提供了两种身份选择，请选择您需要升级的身份🙂</p>
+                    <p>🦉您当前的身份是:<label id="userIdentity" class="badge">普通用户</label></p>
+                    <p>🥗身份到期时间为:{{expireTime}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="container pt-3" id="identity_body">
+        <div class="d-flex flex-column flex-lg-row col-12 justify-content-center align-items-center-small text-center">
+            <div class="col-12 col-lg-3 m-2 card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="text-center">高级用户</h3>
+                </div>
+                <div class="card-body">
+                    <p>🐿️最大上传数量限制:40张</p>
+                    <p>🥞最大上传大小限制:5M</p>
+                    <p>⏰最大储存时间限制:7天</p>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <h5 class="m-0">现价:{{advance_price}}元/{{advance_date}}天</h5>
+                    <button class="btn btn-primary mt-2">立即升级</button>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-3 m-2 card">
+                <div class="card-header bg-warning">
+                    <h3>至尊用户</h3>
+                </div>
+                <div class="card-body">
+                    <p>🐿️最大上传数量限制:100张</p>
+                    <p>🥞最大上传大小限制:10M</p>
+                    <p>⏰最大储存时间限制:30天</p>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <h5 class="m-0">现价:{{supreme_price}}元/{{supreme_date}}天</h5>
+                    <button class="btn btn-primary mt-2">立即升级</button>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-3 m-2 card">
+                <div class="card-header bg-success text-white">
+                    <h3>激活码升级</h3>
+                </div>
+                <div class="card-body">
+                    <p>请在下方输入您的激活码</p>
+                    <label>
+                        <input v-model="verify_code" type="text" name="code" class="input-group-text text-start">
+                    </label>
+                    <p class="text-danger">一个激活码只能使用一次</p>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-end">
+                    <button @click="submitCode" class="btn btn-primary mt-2">立即升级</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<script type="module">
+
+    let user_identity = 1;
+    let user_token = "";
+
+    Vue.createApp({
+        data() {
+            return {
+                username: '',
+                token:'',
+                identity:1,
+                expireTime:0
+            }
+        },
+        mounted() {
+            let string = location.search.split(['data='])[1];
+            if (string.length!==0) {
+                $.post("http://www.libreeze.top/web/aCloud/api/v1/guser.php",{
+                    t:string
+                },(result)=>{
+                    let parse = JSON.parse(result);
+                    this.token = parse['token'];
+                    user_token = this.token;
+                    this.username = parse['username'];
+                    this.identity = parse['identity'];
+                    user_identity = this.identity;
+                    let expireTime = parse['identity_expire'];
+                    let time = "无期限";
+                    if (expireTime!=="0") {
+                        let number = parseInt(expireTime);
+                        if (expireTime.length<13) {
+                            number=number*1000;
+                        }
+                        let date = new Date(number);
+                        time = date.getFullYear()+"-"+(date.getUTCMonth()+1)+"-"+date.getDate();
+                    }
+                    this.expireTime = time;
+                    let user_idn = "普通用户";
+                    let user_cls = "bg-normal-user";
+                    switch (this.identity) {
+                        case '2':
+                            user_idn = "高级用户";
+                            user_cls = "bg-l2-user";
+                            break;
+                        case '3':
+                            user_idn = "至尊用户";
+                            user_cls = "bg-l3-user";
+                            break;
+                    }
+                    $('#userIdentity').empty().append(user_idn).addClass(user_cls);
+                });
+            }
+        }
+    }).mount("#main_body");
+
+    Vue.createApp({
+        data() {
+            return {
+                advance_price:0,
+                advance_date:30,
+                supreme_price:0,
+                supreme_date:30,
+                verify_code:""
+            }
+        },
+        methods:{
+            submitCode:function () {
+                if (this.verify_code==="") {
+                    alert("请输入激活码");
+                } else {
+                    $.post("../api/v1/improveUser.php",{
+                        m:0,
+                        token:user_token,
+                        code:this.verify_code
+                    },(result)=> {
+                        console.log(result);
+                        let parse = JSON.parse(result);
+                        let parseElement = parse['code'];
+                        if (parseElement === 1) {
+                            alert("激活成功!成功激活:"+parse['date']+"天");
+                            location.reload();
+                        } else if (parseElement === 2) {
+                            alert("未找到激活码或已被使用!");
+                        } else {
+                            alert("激活失败!请检查网络环境");
+                        }
+                    })
+                }
+            }
+        },
+        mounted() {
+            // http://www.libreeze.top/web/aCloud
+            $.get("http://www.libreeze.top/web/aCloud/api/v1/gprice.php",(result)=>{
+                let parse = JSON.parse(result);
+                let parseElement = parse['advance'];
+                this.advance_price = parseElement['price'];
+                this.advance_date = parseElement['date'];
+                let parseElement1 = parse['supreme'];
+                this.supreme_price = parseElement1['price'];
+                this.supreme_date = parseElement1['date'];
+            })
+        }
+    }).mount("#identity_body");
+
+</script>
+
+</body>
+</html>

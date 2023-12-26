@@ -1,0 +1,25 @@
+.bg-normal-user {
+    background: #000000;
+}
+
+.bg-l2-user {
+    background: deepskyblue;
+}
+
+.bg-l3-user {
+    background: goldenrod;
+}
+
+.bg-l4-user {
+    background: dodgerblue;
+}
+
+.bg-l5-user {
+    background: darkred;
+}
+
+@media screen and (max-width: 576px){
+    .align-items-center-small {
+        align-items: center;
+    }
+}

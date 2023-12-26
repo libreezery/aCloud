@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <link rel="stylesheet" href="page/css/styles_index.css">
+    <meta charset="utf-8"/>
+    <title>aCloud - 轻便的图床</title>
+    <link rel="stylesheet" href="http://www.libreeze.top/res/css/bootstrap/bootstrap.css">
+    <script src="http://www.libreeze.top/res/js/jquery.js"></script>
+    <script src="http://www.libreeze.top/res/js/vue.global.js"></script>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1"/>
+</head>
+<body class="bg-lightOrange">
+<!--导航栏-->
+<section class="bg-lightblue">
+    <div class="p-3 ms-2">
+        <img class="w-p-100" src="img/aCloud_text_blue.png" alt="title"/>
+    </div>
+</section>
+
+<div id="alert_dialog" class="alert alert-dismissible">
+
+</div>
+
+<div style="background-color: lightskyblue;bottom: 15%;left: 9%;" class="ball_accessory"></div>
+<div style="bottom: 26%;left:20%;background-color: lightseagreen;" class="ball_accessory"></div>
+<div style="bottom: 35%;left:3%;background-color: lightsalmon" class="ball_accessory"></div>
+
+<!--页面主体-->
+<section class="mt-lg-5">
+    <div class="container p-3 d-md-flex justify-content-between">
+        <div class="col-12 col-md-6 me-2">
+            <!--            介绍界面-->
+            <h1 class="display-5">您专属的图床网站</h1>
+            <p>
+                本网站是一个私有图床网站，用户将自己的图片上传至本网站后即可获取到图片直链。
+                用户也可以设定链接的有效时间，在特定时间后图像将会失效。
+                本网站对用户的隐私进行绝对保密，绝对不会外传用户所上传的文件。
+                本网站对存储的照片进行了加密，以用户密码作为图像解密密码，
+                仅用户能够查看自己的图片，内部工作人员也无法查看。
+            </p>
+        </div>
+        <div class="col-12 col-md-4">
+            <!--            登录界面-->
+            <div id="card-login" class="card text-white bg-darkblue col-lg-9">
+                <div class="card-body">
+                    <div class="container">
+                        <h2>登录</h2>
+                        <div class="input-group d-flex flex-column">
+                            <label> 请输用户名：
+                                <input v-model="username" class="input-group-text text-start w-100" name="username"
+                                       type="text" maxlength="20">
+                            </label>
+                            <label> 请输入密码：
+                                <input v-model="password" class="input-group-text text-start w-100" name="username"
+                                       type="password">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-5 card-footer d-flex flex-column align-items-center">
+                    <p>未注册用户将会自动注册</p>
+                    <button @click="login" class="btn btn-primary ">立即登录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div id="navigator_line" class="position-absolute d-none d-lg-block">
+    <label><a href="http://www.libreeze.top" style="color: white;text-decoration-line: none;">All rights reserved
+        @涸清网络科技工作室</a></label>
+</div>
+
+
+<script type="module">
+    $('#alert_dialog').hide();
+
+    Vue.createApp({
+        data() {
+            return {
+                username: '',
+                password: '',
+                alert_message: ''
+            }
+        },
+        methods: {
+            login: function () {
+                // 登录功能
+                if (this.username==='' || this.password==='') {
+                    alert("请输入账号或密码")
+                    return;
+                }
+                if (this.username.length>20) {
+                    alert("账号需在20字符以内");
+                    return;
+                }
+                let url_host = "http://www.libreeze.top/web/aCloud";
+                let host="api/v1/signin.php";
+                $.post(host,{
+                    username: this.username,
+                    password: this.password
+                },function (data,state){
+                    let result,result_class;
+                    if (state === 'success') {
+                        let jsonData = JSON.parse(data);
+                        if (jsonData['code']===1) {
+                            // 成功
+                            let u870 = JSON.parse(jsonData['msg']);
+                            result = u870['msg'];
+                            result_class = "alert-success";
+                            let u870Element = u870['data'];
+                            $.post("./api/v1/gcookies.php",{
+                                token:u870Element
+                            });
+                            setTimeout(function (){
+                                window.open(url_host+"/page/main.html?data="+u870Element,"_self");
+                            },1000)
+                        } else if (jsonData['code']===2) {
+                            result = jsonData['msg']
+                            result_class = "alert-success";
+                        } else {
+                            result = jsonData['msg']
+                            result_class = "alert-danger";
+                        }
+                    }
+                    $('#alert_dialog').append(result).addClass(result_class).fadeIn()
+                    setTimeout(function (){
+                        $('#alert_dialog').empty().removeClass(result_class).fadeOut()
+                    },3000)
+                })
+            }
+        },
+        mounted() {
+            $.get("./api/v1/gcookies.php",(result)=>{
+                if (result!=="null") {
+                    window.open("./page/main.html?data="+result,"_self");
+                }
+            });
+        }
+    }).mount("#card-login");
+</script>
+
+</body>
+</html>

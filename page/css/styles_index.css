@@ -1,0 +1,50 @@
+.bg-lightblue {
+    background: #66c4d9 !important;
+}
+
+.bg-lightOrange {
+    background: #F2E6D8 !important;
+}
+
+.bg-darkblue {
+    background: rgb(73, 124, 191) !important;
+}
+
+.w-p-100 {
+    width: 100px !important;
+}
+
+.ball_accessory{
+    width: 70px;
+    height: 70px;
+    border-radius: 360px;
+    position: absolute;
+    z-index: -1;
+    animation-name: accessory_animation;
+    animation-duration: 5s;
+    animation-iteration-count: infinite;
+}
+
+@keyframes accessory_animation {
+    50% {
+        width: 100px;
+        height: 100px;
+    }
+    100% {
+        width: 70px;
+        height: 70px;
+    }
+}
+
+
+#navigator_line {
+    bottom: 0;
+    width: 100%;
+    height: 70px;
+    background-color: #F2937E;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+}
